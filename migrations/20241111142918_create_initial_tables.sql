@@ -19,7 +19,7 @@ CREATE TABLE balances (
 	updated_at timestamp with time zone NULL,
 	deleted_at timestamp with time zone NULL,
 	user_id bigint NOT NULL,
-	amount bigint NOT NULL,
+	amount text NOT NULL,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -31,7 +31,7 @@ CREATE TABLE transactions (
 	updated_at timestamp with time zone NULL,
 	deleted_at timestamp with time zone NULL,
 	user_id bigint NOT NULL,
-	source transaction_source NOT NULL,
+	source transaction_source,
 	t_state transaction_state NOT NULL,
 	amount text NOT NULL,
 	PRIMARY KEY (id),
