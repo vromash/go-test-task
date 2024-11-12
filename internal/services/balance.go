@@ -6,6 +6,8 @@ import (
 	"go_test_task/internal/dto"
 	"go_test_task/internal/models"
 	"go_test_task/internal/repositories"
+
+	"go.uber.org/zap"
 )
 
 type BalanceService interface {
@@ -14,15 +16,18 @@ type BalanceService interface {
 }
 
 type balanceService struct {
+	logger            *zap.Logger
 	balanceRepository repositories.BalanceRepository
 	userRepository    repositories.UserRepository
 }
 
 func NewBalanceService(
+	logger *zap.Logger,
 	balanceRepository repositories.BalanceRepository,
 	userRepository repositories.UserRepository,
 ) BalanceService {
 	return balanceService{
+		logger:            logger,
 		balanceRepository: balanceRepository,
 		userRepository:    userRepository,
 	}
@@ -35,6 +40,7 @@ func (s balanceService) GetBalance(ctx context.Context, userID uint64) (dto.Bala
 
 	balance, err := s.balanceRepository.GetBalance(ctx, userID)
 	if err != nil {
+		s.logger.Error("failed to get balance", zap.Error(err))
 		return dto.Balance{}, fmt.Errorf("failed to get balance: %v", err)
 	}
 
@@ -61,6 +67,7 @@ func (s balanceService) UpdateBalance(ctx context.Context, req dto.UpdateBalance
 	}
 
 	if err != nil {
+		s.logger.Error("failed to update balance", zap.Error(err))
 		return fmt.Errorf("failed to update balance: %v", err)
 	}
 

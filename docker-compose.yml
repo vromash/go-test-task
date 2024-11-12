@@ -12,7 +12,7 @@ services:
       - DB_PASSWORD=postgres
       - DB_NAME=go-test-task-db
     depends_on:
-      - postgres
+      - postgres_setup
 
   postgres:
     image: postgres:15
@@ -25,6 +25,21 @@ services:
       POSTGRES_DB: go-test-task-db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres_setup:
+    build:
+      context: .
+      dockerfile: Dockerfile.setup
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: [ "bash", "-c", "migrations/migrate-and-seed.sh"]      
 
 volumes:
   postgres_data:

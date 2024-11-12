@@ -10,21 +10,25 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func main() {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+
 	cfg := config.ReadConfig()
 	db, err := getDatabaseClient(cfg.DB)
 	if err != nil {
-		panic(err)
+		logger.Fatal("failed to connect to database", zap.Error(err))
 	}
 
 	balanceRepository := repositories.NewBalanceRepository(db)
 	userRepository := repositories.NewUserRepository(db)
 
-	balanceService := services.NewBalanceService(balanceRepository, userRepository)
+	balanceService := services.NewBalanceService(logger, balanceRepository, userRepository)
 
 	balanceHandler := handlers.NewBalanceHandler(balanceService)
 
@@ -36,7 +40,11 @@ func main() {
 		r.Post("/transaction", balanceHandler.UpdateBalance)
 	})
 
-	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), r)
+	logger.Info(fmt.Sprintf("starting http server on %d port", cfg.Port))
+	err = http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), r)
+	if err != nil && err != http.ErrServerClosed {
+		logger.Fatal("failed to start http server", zap.Error(err))
+	}
 }
 
 func getDatabaseClient(cfg config.DBConfig) (*gorm.DB, error) {
