@@ -1,22 +1,22 @@
 -- +goose Up
 -- +goose StatementBegin
 INSERT INTO
-    users (name)
+    users (id, name)
 VALUES
-    ('Alex'),
-    ('Simon'),
-    ('Albert'),
-    ('Carl'),
-    ('James');
+    (1, 'Alex'),
+    (2, 'Simon'),
+    (3, 'Albert'),
+    (4, 'Carl'),
+    (5, 'James') ON CONFLICT DO NOTHING;
 
 INSERT INTO
-    balances (user_id, amount)
+    balances (id, user_id, amount)
 VALUES
-    (1, '0'),
-    (2, '0'),
-    (3, '0'),
-    (4, '0'),
-    (5, '0');
+    (1, 1, '0'),
+    (2, 2, '0'),
+    (3, 3, '0'),
+    (4, 4, '0'),
+    (5, 5, '0') ON CONFLICT DO NOTHING;
 
 -- +goose StatementEnd
 
